@@ -1,0 +1,113 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap");
+
+:root {
+  --shadow-color: 204deg 81% 40%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+body {
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+#root,
+#__next {
+  isolation: isolate;
+}
+
+body * {
+  font-family: "Montserrat", sans-serif;
+}
+
+#search-form {
+  min-height: 60vh;
+}
+
+.avail-fields-list,
+.active-fields-list {
+  list-style: none;
+  font-size: 0.8rem;
+}
+
+.field-add,
+.field-remove {
+  position: relative;
+  border-radius: 1rem;
+  box-shadow: 0 0 2px rgb(122, 122, 122);
+  cursor: pointer;
+  text-decoration: none;
+  color: black;
+  width: max-content;
+}
+
+.field-add i,
+.field-remove i {
+  position: absolute;
+  top: 22%;
+  bottom: 0;
+}
+
+.fld-label {
+  position: relative;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-shadow: 0px 0px 1px hsl(var(--shadow-color) / 40%),
+    0px 0px 2px hsl(var(--shadow-color) / 40%);
+  color: hsl(var(--shadow-color) / 70%);
+}
+
+[id*="_fld"] {
+  padding: 0.15rem 0.50rem;
+  box-shadow: 0px 0.2px 0.3px hsl(var(--shadow-color) / 0),
+    0px 0.6px 0.9px hsl(var(--shadow-color) / 0.1),
+    0px 1px 1.5px hsl(var(--shadow-color) / 0.21),
+    0px 1.7px 2.6px hsl(var(--shadow-color) / 0.31),
+    0.1px 2.9px 4.4px hsl(var(--shadow-color) / 0.41);
+  border: 1px solid hsl(var(--shadow-color) / 13%);
+}
+
+[id*="from_fld"],
+[id*="to_fld"] {
+  width: 7.25rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.date-to {
+  margin: 0 0.5rem;
+}
