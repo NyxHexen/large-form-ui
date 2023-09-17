@@ -65,7 +65,7 @@ body * {
 }
 
 #search-form {
-  height: 60vh;
+height: 80vh;
 }
 
 .pips-list,
@@ -75,6 +75,7 @@ body * {
 }
 
 .pips-list > * {
+  user-select: none;
   position: relative;
   background: #fff;
   border-radius: 20px;
@@ -86,10 +87,38 @@ body * {
   width: max-content;
 }
 
-[class*="-pip"] i {
+.pips-list > *:hover {
+  background-color: #bfd9ffb4;
+}
+
+.pips-list > *:hover .fa-star {
+  opacity: 1;
+}
+
+[class*="-pip"] i.fa-plus {
   position: absolute;
-  top: 22%;
+  top: 20%;
   bottom: 0;
+}
+
+[class*="-pip"] i.fa-star {
+  position: absolute;
+  top: 17.5%;
+  right: 2.5%;
+  opacity: .25;
+}
+
+[class*="-pip"] i.fa-star.fa-solid {
+  color: #FFC000;
+  opacity: 1 !important;
+}
+
+[class*="-pip"].active {
+  background-color: rgb(41, 228, 140);
+}
+
+[class*="-pip"].favourite {
+  background-color: #ffbf0046;
 }
 
 .fld-label {

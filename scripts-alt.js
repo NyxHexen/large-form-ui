@@ -1,8 +1,9 @@
 import generateRandomFields from "./generateRandomFields.js";
+import generateTestableFields from "./generateTestableFields.js";
 
 class ManyFieldsFormManager {
   constructor() {
-    this.fields = generateRandomFields(31);
+    this.fields = generateTestableFields(31);
     this.PIP_LENGTH = 21;
     this.FORM_LENGTH = 11;
 
@@ -49,11 +50,17 @@ class ManyFieldsFormManager {
 
   pipGen(field) {
     const li = document.createElement("li");
-    li.classList = `${field.id}-pip ps-1 pe-4 mb-2`;
+    let isInCookie = this.getCookie("favFieldsList");
+    isInCookie = isInCookie.split(",");
+    isInCookie = isInCookie.includes(field.id);
+
+    li.classList = `${field.id}-pip ${
+      isInCookie ? "favourite" : ""
+    } ps-1 pe-4 mb-2`;
     li.innerHTML = `
     <i class="fa-solid fa-plus text-success ps-1"></i>
     <span class="ps-3">${field.name}</span>
-    <i class="fa-regular fa-star"></i>
+    <i class="fa-${isInCookie ? "solid" : "regular"} fa-star"></i>
     `;
     return li;
   }
@@ -63,11 +70,6 @@ class ManyFieldsFormManager {
       const newPip = this.pipGen(field);
 
       const updateField = (e) => {
-        // To-Do - Find a way to do this without having to reset pipsList
-        // each time
-        // To-Do - Find a way to have pips that are being added back by removing a field
-        // to be added all the way back. If the first ul is empty - get rid of it and add
-        // a new one at the back.
         const fieldEl = document.querySelector(`[id*=${field.id}]`);
         const eTargetLi = e.target.closest("li").classList;
         this.fieldMng(fieldEl ? "remove" : "add", field);
