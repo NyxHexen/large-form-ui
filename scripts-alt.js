@@ -77,6 +77,29 @@ class ManyFieldsFormManager {
         updateField(e);
       });
 
+      newPip.querySelector(".fa-star").addEventListener("click", (e) => {
+        let favListCookie = this.getCookie("favFieldsList");
+        let favList = [];
+
+        if (favListCookie) {
+          let favList = favListCookie.split(",");
+          if (favList.includes(field.id)) {
+            let updatedList = favList.filter((item) => {
+              return item !== field.id;
+            });
+            this.setCookie("favFieldsList", updatedList, 999);
+          } else {
+            this.setCookie(
+              "favFieldsList",
+              `${favListCookie + "," + field.id}`,
+              999
+            );
+          }
+        } else {
+          this.setCookie("favFieldsList", `${field.id}`, 999);
+        }
+      });
+
       let pipLists = this.pipsList.parentElement.querySelectorAll("ul");
       let tempList = [];
 
