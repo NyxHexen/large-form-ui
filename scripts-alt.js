@@ -82,13 +82,42 @@ class ManyFieldsFormManager {
         this.fieldMng(fieldEl ? "remove" : "add", field);
       };
 
-      newPip.addEventListener("click", (e) => {
-        updateField(e);
+      newPip.addEventListener("click", () => {
+        let isInCookie = this.getCookie("favFieldsList");
+        isInCookie = isInCookie.includes(field.id);
+
+        if (newPip.classList.contains("active")) {
+          newPip.classList.remove("active");
+          newPip.classList.contains("favourite")
+            ? newPip.classList.remove("favourite")
+            : "";
+        } else {
+          if (isInCookie) {
+            newPip.classList.add("active");
+            newPip.classList.add("favourite");
+          } else {
+            newPip.classList.add("active");
+          }
+        }
+
+        updateField();
       });
 
       newPip.querySelector(".fa-star").addEventListener("click", (e) => {
         e.stopPropagation();
+        let thisEl = e.target;
+        let parentEl = e.target.parentElement;
         let favListCookie = this.getCookie("favFieldsList");
+
+        if (parentEl.classList.contains("favourite")) {
+          parentEl.classList.remove("favourite");
+          thisEl.classList.remove("fa-solid");
+          thisEl.classList.add("fa-regular");
+        } else {
+          parentEl.classList.add("favourite");
+          thisEl.classList.add("fa-solid");
+          thisEl.classList.remove("fa-regular");
+        }
 
         if (favListCookie) {
           if (favListCookie.includes(field.id)) {
