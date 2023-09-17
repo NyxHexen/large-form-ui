@@ -4,6 +4,7 @@ import generateTestableFields from "./generateTestableFields.js";
 class ManyFieldsFormManager {
   constructor() {
     this.fields = generateTestableFields(31);
+    this.fields[0].type = "date";
     this.PIP_LENGTH = 21;
     this.FORM_LENGTH = 11;
 
@@ -60,11 +61,11 @@ class ManyFieldsFormManager {
     isInCookie = isInCookie.includes(field.id);
 
     li.classList = `${field.id}-pip ${
-      isInCookie ? "favourite" : ""
+      isInCookie ? "active favourite" : ""
     } ps-1 pe-4 mb-2`;
     li.innerHTML = `
     <i class="fa-solid fa-plus text-success ps-1"></i>
-    <span class="ps-3">${field.name}</span>
+    <span class="ps-4">${field.name}</span>
     <i class="fa-${isInCookie ? "solid" : "regular"} fa-star"></i>
     `;
     return li;
@@ -74,9 +75,10 @@ class ManyFieldsFormManager {
     if (field && action == "add") {
       const newPip = this.pipGen(field);
 
-      const updateField = (e) => {
-        const fieldEl = document.querySelector(`[id*=${field.id}]`);
-        const eTargetLi = e.target.closest("li").classList;
+      const updateField = () => {
+        const fieldEl =
+          document.querySelector(`[id*=${field.id}_fld]`) ||
+          document.querySelector(`[id*=${field.id}_from_fld]`);
         this.fieldMng(fieldEl ? "remove" : "add", field);
       };
 
@@ -139,12 +141,14 @@ class ManyFieldsFormManager {
         }
       }
     } else if (field && action == "update") {
+      // To Do - Figure out if I need this.
       console.log("Update!");
     }
   }
 
   fieldGen(field) {
     const newFieldEl = document.createElement("div");
+    newFieldEl.classList.add("mb-1");
     const dateField = field.type === "date";
     let addlFields = "";
 
@@ -214,7 +218,9 @@ class ManyFieldsFormManager {
 
   // Function to remove a field element
   removeField(field) {
-    let fieldToRemove = document.querySelector(`[id*=${field.id}]`);
+    let fieldToRemove =
+      document.querySelector(`[id*=${field.id}_fld]`) ||
+      document.querySelector(`[id*=${field.id}_from_fld]`);
     if (field.type == "date") {
       fieldToRemove.parentElement.parentElement.remove();
     } else {
