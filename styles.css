@@ -79,6 +79,7 @@ body * {
   position: relative;
   background: #fff;
   border-radius: 20px;
+  border: 1px solid transparent;
   box-shadow:  1px 2px 3px #cccccc,
   0 0 1px #cccccc;
   cursor: pointer;
@@ -103,7 +104,7 @@ body * {
 
 [class*="-pip"] i.fa-star {
   position: absolute;
-  top: 17.5%;
+  top: 18%;
   right: 2.5%;
   opacity: .25;
 }
