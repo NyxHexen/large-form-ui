@@ -86,7 +86,7 @@ class ManyFieldsFormManager {
   }
 
   fieldGen(field) {
-    console.log("FieldGen");
+    const newFieldEl = document.createElement("div");
     const dateField = field.type === "date";
     let addlFields = "";
 
@@ -102,8 +102,7 @@ class ManyFieldsFormManager {
     `;
     }
 
-    return `
-    <div class="mb-1">
+    newFieldEl.innerHTML += `
       <label for="${field.id + "_to_fld"}" class="fld-label">${
       field.name
     }</label>
@@ -117,19 +116,20 @@ class ManyFieldsFormManager {
         class="form-control"
       />
       ${addlFields}
-    </div>
     `;
+
+    return newFieldEl;
   }
 
   fieldMng(action, field) {
     // Check if both action and field are provided
-    console.log;
     if (action && field) {
       if (action == "add") {
         // Check if the number of child elements in searchForm is divisible by DEFAULT_LENGTH
         if ((this.searchForm.childElementCount + 1) % this.DEFAULT_LENGTH) {
           // Add the field using fieldGen
-          this.searchForm.innerHTML += this.fieldGen(field);
+          let newField = this.fieldGen(field);
+          this.searchForm.append(newField);
         } else {
           // Create a new column for fields
           this.addNewFieldColumn(field);
