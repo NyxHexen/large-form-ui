@@ -13,10 +13,10 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="container">
+    <div class="form-container mt-5">
       <div class="row d-flex justify-content-center">
-        <div class="col-12 card d-flex mt-5 py-3 px-3">
-          <div class="row justify-content-between">
+        <div class="col-12 d-flex py-4">
+          <div class="row justify-content-between py-3 w-100">
             <form
               id="search-form"
               class="col-9 d-flex flex-column align-items-center h-100"
@@ -40,19 +40,10 @@
               </div>
               <button type="submit" class="btn btn-primary mt-3">SEARCH</button>
             </form>
-            <div class="fld-options col-3 end-0">
+            <div class="fld-options col-3">
               <h2 class="h5">Active Fields</h2>
-              <div class="avail-fields d-flex h-50">
-                <ul class="avail-fields-list p-0 me-2"></ul>
-              </div>
-              <h2 class="h5">Available Fields</h2>
-              <div class="active-fields d-flex h-50">
-                <ul class="active-fields-list p-0">
-                  <li class="field-add ps-1 mb-1">
-                    <i class="fa-solid fa-minus text-danger ps-1"></i>
-                    <span class="ps-3 pe-2">Certificate (default)</span>
-                  </li>
-                </ul>
+              <div class="pips d-flex">
+                <ul class="pips-list p-0"></ul>
               </div>
             </div>
           </div>

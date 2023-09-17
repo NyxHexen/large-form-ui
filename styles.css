@@ -50,33 +50,43 @@ h6 {
   isolation: isolate;
 }
 
+body {
+  background-color: #797979;
+}
+
 body * {
   font-family: "Montserrat", sans-serif;
 }
 
-#search-form {
-  min-height: 60vh;
+.form-container {
+  background: #fff;
+  border-top: 1px solid #4e4e4e;
+  border-bottom: 1px solid #4e4e4e;
 }
 
-.avail-fields-list,
-.active-fields-list {
+#search-form {
+  height: 60vh;
+}
+
+.pips-list,
+.pips-list {
   list-style: none;
   font-size: 0.8rem;
 }
 
-.field-add,
-.field-remove {
+.pips-list > * {
   position: relative;
-  border-radius: 1rem;
-  box-shadow: 0 0 2px rgb(122, 122, 122);
+  background: #fff;
+  border-radius: 20px;
+  box-shadow:  1px 2px 3px #cccccc,
+  0 0 1px #cccccc;
   cursor: pointer;
   text-decoration: none;
   color: black;
   width: max-content;
 }
 
-.field-add i,
-.field-remove i {
+[class*="-pip"] i {
   position: absolute;
   top: 22%;
   bottom: 0;
