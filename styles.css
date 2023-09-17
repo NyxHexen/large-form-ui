@@ -65,13 +65,13 @@ body * {
 }
 
 #search-form {
-height: 80vh;
+  height: 80vh;
 }
 
 .pips-list,
 .pips-list {
   list-style: none;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 }
 
 .pips-list > * {
@@ -114,11 +114,13 @@ height: 80vh;
 }
 
 [class*="-pip"].active {
-  background-color: rgb(41, 228, 140);
+  background-color: rgb(116, 228, 41, 0.5);
+  border: 1px solid rgb(116, 228, 41);
 }
 
 [class*="-pip"].favourite {
-  background-color: #ffbf0046;
+  border: 1px solid #ffbf0046;
+  background: #ffbf0046 !important;
 }
 
 .fld-label {
