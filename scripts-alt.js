@@ -80,7 +80,6 @@ class ManyFieldsFormManager {
       newPip.querySelector(".fa-star").addEventListener("click", (e) => {
         e.stopPropagation();
         let favListCookie = this.getCookie("favFieldsList");
-        let favList = [];
 
         if (favListCookie) {
           let favList = favListCookie.split(",");
