@@ -14,8 +14,13 @@ class ManyFieldsFormManager {
 
   init() {
     if (this.fields) {
+      let isInCookie = this.getCookie("favFieldsList");
+
       const tempPipsList = this.fields.map((field) => {
         this.pipMng(field, "add");
+        if (isInCookie.includes(field.id)) {
+          this.fieldMng("add", field);
+        }
       });
     }
   }
