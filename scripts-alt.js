@@ -5,6 +5,7 @@ class ManyFieldsFormManager {
     this.fields = generateRandomFields(32);
     this.PIP_LENGTH = 21;
     this.FORM_LENGTH = 11;
+    this.DEFAULT_LENGTH = 12;
 
     this.pipsDiv = document.querySelector(".pips");
     this.pipsList = document.querySelector(".pips-list");
@@ -32,7 +33,6 @@ class ManyFieldsFormManager {
   pipMng(field, action) {
     if (field && action == "add") {
       const newPip = this.pipGen(field);
-      const fieldEl = document.querySelector(`[id*=${field.id}]`);
 
       const updateField = () => {
         // To-Do - Find a way to do this without having to reset pipsList
@@ -40,10 +40,8 @@ class ManyFieldsFormManager {
         // To-Do - Find a way to have pips that are being added back by removing a field
         // to be added all the way back. If the first ul is empty - get rid of it and add
         // a new one at the back.
-        this.fieldMng({
-          field,
-          action: fieldEl ? "remove" : "add",
-        });
+        const fieldEl = document.querySelector(`[id*=${field.id}]`);
+        this.fieldMng(fieldEl ? "remove" : "add", field);
       };
 
       newPip.addEventListener("click", () => {
@@ -88,6 +86,7 @@ class ManyFieldsFormManager {
   }
 
   fieldGen(field) {
+    console.log("FieldGen");
     const dateField = field.type === "date";
     let addlFields = "";
 
@@ -124,6 +123,7 @@ class ManyFieldsFormManager {
 
   fieldMng(action, field) {
     // Check if both action and field are provided
+    console.log;
     if (action && field) {
       if (action == "add") {
         // Check if the number of child elements in searchForm is divisible by DEFAULT_LENGTH
