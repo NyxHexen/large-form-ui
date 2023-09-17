@@ -30,7 +30,7 @@ class ManyFieldsFormManager {
         c = c.substring(1);
       }
       if (c.indexOf(name) == 0) {
-        return c.substring(name.length, c.length);
+        return c.substring(name.length, c.length).split(",");
       }
     }
     console.error(`Cookie not found -- ${cname}`);
@@ -41,7 +41,8 @@ class ManyFieldsFormManager {
     const d = new Date();
     d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
     let expires = "expires=" + d.toUTCString();
-    document.cookie = cname + "=" + cvalue + ";" + expires + "; path=/";
+    let stringVal = cvalue instanceof Array ? cvalue.join(",") : cvalue;
+    document.cookie = cname + "=" + stringVal + ";" + expires + "; path=/";
   }
 
   deleteCookie(cname) {
@@ -51,7 +52,6 @@ class ManyFieldsFormManager {
   pipGen(field) {
     const li = document.createElement("li");
     let isInCookie = this.getCookie("favFieldsList");
-    isInCookie = isInCookie.split(",");
     isInCookie = isInCookie.includes(field.id);
 
     li.classList = `${field.id}-pip ${
@@ -84,9 +84,8 @@ class ManyFieldsFormManager {
         let favListCookie = this.getCookie("favFieldsList");
 
         if (favListCookie) {
-          let favList = favListCookie.split(",");
-          if (favList.includes(field.id)) {
-            let updatedList = favList.filter((item) => {
+          if (favListCookie.includes(field.id)) {
+            let updatedList = favListCookie.filter((item) => {
               return item !== field.id;
             });
             this.setCookie("favFieldsList", updatedList, 999);
