@@ -2,10 +2,9 @@ import generateRandomFields from "./generateRandomFields.js";
 
 class ManyFieldsFormManager {
   constructor() {
-    this.fields = generateRandomFields(32);
+    this.fields = generateRandomFields(31);
     this.PIP_LENGTH = 21;
     this.FORM_LENGTH = 11;
-    this.DEFAULT_LENGTH = 12;
 
     this.pipsDiv = document.querySelector(".pips");
     this.pipsList = document.querySelector(".pips-list");
@@ -20,12 +19,41 @@ class ManyFieldsFormManager {
     }
   }
 
+  getCookie(cname) {
+    let name = cname + "=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(";");
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) == " ") {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    console.error(`Cookie not found -- ${cname}`);
+    return "";
+  }
+
+  setCookie(cname, cvalue, exdays) {
+    const d = new Date();
+    d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
+    let expires = "expires=" + d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + "; path=/";
+  }
+
+  deleteCookie(cname) {
+    this.setCookie(cname, "", -1);
+  }
+
   pipGen(field) {
     const li = document.createElement("li");
-    li.classList = `${field.id}-pip ps-1 pe-1 mb-2`;
+    li.classList = `${field.id}-pip ps-1 pe-4 mb-2`;
     li.innerHTML = `
     <i class="fa-solid fa-plus text-success ps-1"></i>
-    <span class="ps-3 pe-2">${field.name}</span>
+    <span class="ps-3">${field.name}</span>
+    <i class="fa-regular fa-star"></i>
     `;
     return li;
   }
@@ -34,18 +62,19 @@ class ManyFieldsFormManager {
     if (field && action == "add") {
       const newPip = this.pipGen(field);
 
-      const updateField = () => {
+      const updateField = (e) => {
         // To-Do - Find a way to do this without having to reset pipsList
         // each time
         // To-Do - Find a way to have pips that are being added back by removing a field
         // to be added all the way back. If the first ul is empty - get rid of it and add
         // a new one at the back.
         const fieldEl = document.querySelector(`[id*=${field.id}]`);
+        const eTargetLi = e.target.closest("li").classList;
         this.fieldMng(fieldEl ? "remove" : "add", field);
       };
 
-      newPip.addEventListener("click", () => {
-        updateField();
+      newPip.addEventListener("click", (e) => {
+        updateField(e);
       });
 
       let pipLists = this.pipsList.parentElement.querySelectorAll("ul");
@@ -125,8 +154,8 @@ class ManyFieldsFormManager {
     // Check if both action and field are provided
     if (action && field) {
       if (action == "add") {
-        // Check if the number of child elements in searchForm is divisible by DEFAULT_LENGTH
-        if ((this.searchForm.childElementCount + 1) % this.DEFAULT_LENGTH) {
+        // Check if the number of child elements in searchForm is divisible by FORM_LENGTH
+        if ((this.searchForm.childElementCount + 1) % this.FORM_LENGTH) {
           // Add the field using fieldGen
           let newField = this.fieldGen(field);
           this.searchForm.append(newField);
@@ -151,7 +180,7 @@ class ManyFieldsFormManager {
     this.searchForm = document.querySelectorAll(".flds-container>div")[
       this.searchForm.parentElement.children.length - 1
     ];
-    this.searchForm.innerHTML += this.fieldGen(field);
+    this.searchForm.append(this.fieldGen(field));
   }
 
   // Function to remove a field element
