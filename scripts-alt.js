@@ -109,7 +109,7 @@ class ManyFieldsFormManager {
         let parentEl = e.target.parentElement;
         let favListCookie = this.getCookie("favFieldsList");
 
-        if (parentEl.classList.contains("favourite")) {
+        if (thisEl.classList.contains("fa-solid")) {
           parentEl.classList.remove("favourite");
           thisEl.classList.remove("fa-solid");
           thisEl.classList.add("fa-regular");
