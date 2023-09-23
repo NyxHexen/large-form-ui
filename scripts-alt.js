@@ -138,7 +138,6 @@ class ManyFieldsFormManager {
       });
 
       let pipLists = this.pipsList.parentElement.querySelectorAll("ul");
-      let tempList = [];
 
       if ((this.pipsList.children.length + 1) % this.PIP_LENGTH != 0) {
         this.pipsList.append(newPip);
