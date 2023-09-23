@@ -1,7 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap");
 
 :root {
-  --shadow-color: 204deg 81% 40%;
+  --shadow-color: 0deg 0% 15%;
+  --lighter-shadow-color: 0deg 0% 60%;
 }
 
 *,
@@ -79,9 +80,10 @@ body * {
   position: relative;
   background: #fff;
   border-radius: 20px;
-  border: 1px solid transparent;
-  box-shadow:  1px 2px 3px #cccccc,
-  0 0 1px #cccccc;
+  border: 1px solid hsl(var(--lighter-shadow-color));
+  box-shadow: 2px 2px hsl(var(--lighter-shadow-color)), 
+  1px 1px hsl(var(--lighter-shadow-color)),
+  0 0 hsl(var(--lighter-shadow-color));
   cursor: pointer;
   text-decoration: none;
   color: black;
@@ -98,13 +100,13 @@ body * {
 
 [class*="-pip"] i.fa-plus {
   position: absolute;
-  top: 20%;
+  top: 18%;
   bottom: 0;
 }
 
 [class*="-pip"] i.fa-star {
   position: absolute;
-  top: 18%;
+  top: 20%;
   right: 2.5%;
   opacity: .25;
 }
@@ -115,11 +117,16 @@ body * {
 }
 
 [class*="-pip"].active {
-  background-color: rgb(116, 228, 41, 0.5);
-  border: 1px solid rgb(116, 228, 41);
+  background-color: #a7dbff;
+  box-shadow: 1px 1px #86afcc,
+  0 0 #86afcc;
+  transform: translateX(1px) translateY(1px);
+  border: 1px solid #86afcc;
 }
 
-[class*="-pip"].favourite {
+[class*="-pip"].favourite.active {
+  box-shadow: 1px 1px #cccccc,
+  0 0 #cccccc !important;
   border: 1px solid #ffbf0046;
   background: #ffbf0046 !important;
 }
