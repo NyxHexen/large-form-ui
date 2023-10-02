@@ -1,5 +1,5 @@
-import generateRandomFields from "./generateRandomFields.js";
-import generateTestableFields from "./generateTestableFields.js";
+import generateRandomFields from "./utils/generateRandomFields.js";
+import generateTestableFields from "./utils/generateTestableFields.js";
 
 class ManyFieldsFormManager {
   constructor() {
@@ -259,3 +259,4 @@ class ManyFieldsFormManager {
 
 const FormManager = new ManyFieldsFormManager();
 FormManager.init();
+console.log(FormManager);
