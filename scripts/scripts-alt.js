@@ -91,10 +91,10 @@ class Pip {
           target.classList.replace("fa-regular", "fa-solid");
         }
 
-        if (fieldCookie) {
-          const updatedList = isInCookie
-            ? fieldCookie.filter((item) => item != this.field.id)
-            : `${fieldCookie},${this.field.id}`;
+        if (this.favesCookie) {
+          const updatedList = this.isInCookie
+            ? this.favesCookie.filter((item) => item != this.field.id)
+            : `${this.favesCookie},${this.field.id}`;
 
           setCookie("favFieldsList", updatedList, 999);
         } else {
