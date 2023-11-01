@@ -1,262 +1,228 @@
 import generateRandomFields from "./utils/generateRandomFields.js";
 import generateTestableFields from "./utils/generateTestableFields.js";
 
-class ManyFieldsFormManager {
-  constructor() {
-    this.fields = generateTestableFields(31);
-    this.fields[0].type = "date";
-    this.PIP_LENGTH = 21;
-    this.FORM_LENGTH = 11;
+const defaultConfig = {
+  DEFAULT_PIP_LENGTH: 20,
+  DEFAULT_FORM_LENGTH: 10,
+};
 
-    this.pipsDiv = document.querySelector(".pips");
-    this.pipsList = document.querySelector(".pips-list");
-    this.searchForm = document.querySelector(".flds-container>div");
-  }
-
-  init() {
-    if (this.fields) {
-      let isInCookie = this.getCookie("favFieldsList");
-
-      const tempPipsList = this.fields.map((field) => {
-        this.pipMng(field, "add");
-        if (isInCookie.includes(field.id)) {
-          this.fieldMng("add", field);
-        }
-      });
+function getCookie(cname) {
+  let name = cname + "=";
+  let decodedCookie = decodeURIComponent(document.cookie);
+  let ca = decodedCookie.split(";");
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == " ") {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length).split(",");
     }
   }
+  console.error(`Cookie not found -- ${cname}`);
+  return "";
+}
 
-  getCookie(cname) {
-    let name = cname + "=";
-    let decodedCookie = decodeURIComponent(document.cookie);
-    let ca = decodedCookie.split(";");
-    for (let i = 0; i < ca.length; i++) {
-      let c = ca[i];
-      while (c.charAt(0) == " ") {
-        c = c.substring(1);
-      }
-      if (c.indexOf(name) == 0) {
-        return c.substring(name.length, c.length).split(",");
-      }
+function setCookie(cname, cvalue, exdays) {
+  const d = new Date();
+  d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
+  let expires = "expires=" + d.toUTCString();
+  let stringVal = cvalue instanceof Array ? cvalue.join(",") : cvalue;
+  document.cookie = cname + "=" + stringVal + ";" + expires + "; path=/";
+}
+
+function findAvailableList(lists, maxItems) {
+  for (let i = 0; i < lists.length; i++) {
+    if (
+      lists[i].children.length % maxItems !== 0 ||
+      lists[i].children.length === 0
+    ) {
+      return lists[i];
     }
-    console.error(`Cookie not found -- ${cname}`);
-    return "";
+  }
+  return null; // No available list found
+}
+
+class Pip {
+  constructor(field) {
+    this.field = field;
+    this.favesCookie = getCookie("favFieldsList");
+    this.isInCookie = this.favesCookie.includes(this.field.id) || false;
+    this.fieldEl = new Field(field, this.isInCookie);
+    this.pipEl = this.pipHtml();
+    this.add();
   }
 
-  setCookie(cname, cvalue, exdays) {
-    const d = new Date();
-    d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
-    let expires = "expires=" + d.toUTCString();
-    let stringVal = cvalue instanceof Array ? cvalue.join(",") : cvalue;
-    document.cookie = cname + "=" + stringVal + ";" + expires + "; path=/";
-  }
-
-  deleteCookie(cname) {
-    this.setCookie(cname, "", -1);
-  }
-
-  pipGen(field) {
+  pipHtml() {
     const li = document.createElement("li");
-    let isInCookie = this.getCookie("favFieldsList");
-    isInCookie = isInCookie.includes(field.id);
 
-    li.classList = `${field.id}-pip ${
-      isInCookie ? "active favourite" : ""
+    li.classList = `${this.field.id}-pip ${
+      this.isInCookie ? "active favourite" : ""
     } ps-1 pe-4 mb-2`;
     li.innerHTML = `
     <i class="fa-solid fa-plus text-success ps-1"></i>
-    <span class="ps-4">${field.name}</span>
-    <i class="fa-${isInCookie ? "solid" : "regular"} fa-star"></i>
+    <span class="ps-4">${this.field.name}</span>
+    <i class="fa-${this.isInCookie ? "solid" : "regular"} fa-star"></i>
     `;
     return li;
   }
 
-  pipMng(field, action) {
-    if (field && action == "add") {
-      const newPip = this.pipGen(field);
+  add() {
+    let pipLists = document.querySelectorAll(".pips-list");
+    let currentPipList = findAvailableList(
+      pipLists,
+      defaultConfig.DEFAULT_PIP_LENGTH
+    );
 
-      const updateField = () => {
-        const fieldEl =
-          document.querySelector(`[id*=${field.id}_fld]`) ||
-          document.querySelector(`[id*=${field.id}_from_fld]`);
-        this.fieldMng(fieldEl ? "remove" : "add", field);
-      };
+    if (currentPipList) {
+      currentPipList.append(this.pipEl);
+    }
 
-      newPip.addEventListener("click", () => {
-        let isInCookie = this.getCookie("favFieldsList");
-        isInCookie = isInCookie.includes(field.id);
+    this.pipEl.addEventListener("click", (e) => {
+      const target = e.target;
+      const starIsClicked = target.classList.contains("fa-star");
 
-        if (newPip.classList.contains("active")) {
-          newPip.classList.remove("active");
-          newPip.classList.contains("favourite")
-            ? newPip.classList.remove("favourite")
-            : "";
+      if (starIsClicked) {
+        if (target.classList.contains("fa-solid")) {
+          this.pipEl.classList.remove("favourite");
+          target.classList.replace("fa-solid", "fa-regular");
         } else {
-          if (isInCookie) {
-            newPip.classList.add("active");
-            newPip.classList.add("favourite");
-          } else {
-            newPip.classList.add("active");
-          }
+          this.pipEl.classList.add("favourite");
+          target.classList.replace("fa-regular", "fa-solid");
         }
 
-        updateField();
-      });
+        if (fieldCookie) {
+          const updatedList = isInCookie
+            ? fieldCookie.filter((item) => item != this.field.id)
+            : `${fieldCookie},${this.field.id}`;
 
-      newPip.querySelector(".fa-star").addEventListener("click", (e) => {
-        e.stopPropagation();
-        let thisEl = e.target;
-        let parentEl = e.target.parentElement;
-        let favListCookie = this.getCookie("favFieldsList");
-
-        if (thisEl.classList.contains("fa-solid")) {
-          parentEl.classList.remove("favourite");
-          thisEl.classList.remove("fa-solid");
-          thisEl.classList.add("fa-regular");
+          setCookie("favFieldsList", updatedList, 999);
         } else {
-          parentEl.classList.add("favourite");
-          thisEl.classList.add("fa-solid");
-          thisEl.classList.remove("fa-regular");
+          setCookie("favFieldsList", `${this.field.id}`, 999);
         }
-
-        if (favListCookie) {
-          if (favListCookie.includes(field.id)) {
-            let updatedList = favListCookie.filter((item) => {
-              return item !== field.id;
-            });
-            this.setCookie("favFieldsList", updatedList, 999);
-          } else {
-            this.setCookie(
-              "favFieldsList",
-              `${favListCookie + "," + field.id}`,
-              999
-            );
-          }
-        } else {
-          this.setCookie("favFieldsList", `${field.id}`, 999);
-        }
-      });
-
-      let pipLists = this.pipsList.parentElement.querySelectorAll("ul");
-
-      if ((this.pipsList.children.length + 1) % this.PIP_LENGTH != 0) {
-        this.pipsList.append(newPip);
       } else {
-        const newCol = document.createElement("ul");
-        newCol.classList = "pips-list p-0 me-2";
+        let isInCookie = getCookie("favFieldsList");
+        isInCookie = isInCookie.includes(this.field.id);
 
-        if (pipLists.length > 1) {
-          let minIndex;
-
-          for (let i = 0; i < pipLists.length; i++) {
-            if (pipLists[i].children.length < this.PIP_LENGTH - 1) {
-              minIndex = i;
-            }
-          }
-
-          if (minIndex == undefined) {
-            this.pipsList.after(newCol);
-            this.pipsList = newCol;
-            this.pipsList.append(newPip);
-          } else {
-            this.pipsList = pipLists[minIndex];
-            this.pipsList.append(newPip);
-          }
+        if (this.pipEl.classList.contains("active")) {
+          this.pipEl.classList.remove("active", "favourite");
+        } else if (isInCookie) {
+          this.pipEl.classList.add("active", "favourite");
         } else {
-          this.pipsList.after(newCol);
-          this.pipsList = newCol;
-          this.pipsList.append(newPip);
+          this.pipEl.classList.add("active");
         }
+
+        this.fieldEl[this.fieldEl.isActive ? "remove" : "add"]();
       }
-    } else if (field && action == "update") {
-      // To Do - Figure out if I need this.
-      console.log("Update!");
+    });
+  }
+}
+
+class Field {
+  constructor(field, isInCookie) {
+    this.isActive = false;
+    this.field = field;
+    this.fieldEl = this.fieldHtml();
+    if (isInCookie) {
+      this.add();
     }
   }
 
-  fieldGen(field) {
+  fieldHtml() {
     const newFieldEl = document.createElement("div");
     newFieldEl.classList.add("mb-1");
-    const dateField = field.type === "date";
+    const dateField = this.field.type === "date";
     let addlFields = "";
 
     if (dateField) {
       addlFields = `
         <span class="date-to fld-label"> to </span>
         <input
-        type="${field.type}"
-        name="${field.id}"
-        id="${field.id + "_to_fld"}"
+        type="${this.field.type}"
+        name="${this.field.id}"
+        id="${this.field.id + "_to_fld"}"
         class="form-control"
       />
     `;
     }
 
     newFieldEl.innerHTML += `
-      <label for="${field.id + "_to_fld"}" class="fld-label">${
-      field.name
+      <label for="${this.field.id + "_to_fld"}" class="fld-label">${
+      this.field.name
     }</label>
-      ${field.type == "date" ? '<div class="d-flex align-items-center">' : ""}
+      ${
+        this.field.type == "date"
+          ? '<div class="d-flex align-items-center">'
+          : ""
+      }
       <input
-        type="${field.type}"
-        name="${field.id}"
+        type="${this.field.type}"
+        name="${this.field.id}"
         id="${
-          field.type == "date" ? field.id + "_from_fld" : field.id + "_fld"
+          this.field.type == "date"
+            ? this.field.id + "_from_fld"
+            : this.field.id + "_fld"
         }"
         class="form-control"
       />
       ${addlFields}
     `;
-
     return newFieldEl;
   }
 
-  fieldMng(action, field) {
-    // Check if both action and field are provided
-    if (action && field) {
-      if (action == "add") {
-        // Check if the number of child elements in searchForm is divisible by FORM_LENGTH
-        if ((this.searchForm.childElementCount + 1) % this.FORM_LENGTH) {
-          // Add the field using fieldGen
-          let newField = this.fieldGen(field);
-          this.searchForm.append(newField);
-        } else {
-          // Create a new column for fields
-          this.addNewFieldColumn(field);
-        }
-      } else if (action == "remove") {
-        // Remove the specified field element
-        this.removeField(field);
-      }
+  add() {
+    let fldLists = document.querySelectorAll(".flds");
+    let currentFldList = findAvailableList(
+      fldLists,
+      defaultConfig.DEFAULT_FORM_LENGTH
+    );
+
+    if (currentFldList) {
+      this.isActive = true;
+      currentFldList.append(this.fieldEl);
     }
   }
 
-  // Function to add a new column for fields
-  addNewFieldColumn(field) {
-    let newCol = document.createElement("div");
-    newCol.classList = "flds d-flex flex-column h-100 ms-5 align-items-center";
-    this.searchForm.parentElement.children[
-      this.searchForm.parentElement.children.length - 1
-    ].after(newCol);
-    this.searchForm = document.querySelectorAll(".flds-container>div")[
-      this.searchForm.parentElement.children.length - 1
-    ];
-    this.searchForm.append(this.fieldGen(field));
-  }
-
-  // Function to remove a field element
-  removeField(field) {
-    let fieldToRemove =
-      document.querySelector(`[id*=${field.id}_fld]`) ||
-      document.querySelector(`[id*=${field.id}_from_fld]`);
-    if (field.type == "date") {
-      fieldToRemove.parentElement.parentElement.remove();
-    } else {
-      fieldToRemove.parentElement.remove();
-    }
+  remove() {
+    this.isActive = false;
+    this.fieldEl.remove();
   }
 }
 
-const FormManager = new ManyFieldsFormManager();
-FormManager.init();
-console.log(FormManager);
+class ManyFieldsFormManager {
+  constructor(fieldsList) {
+    this.FIELDS_LIST = fieldsList;
+    this.pipObjArray = [];
+    this.init();
+  }
+
+  init() {
+    const pipDiv = document.querySelector(".pips");
+    const pipListsCount = Math.ceil(
+      this.FIELDS_LIST.length / defaultConfig.DEFAULT_PIP_LENGTH
+    );
+    const fieldsDiv = document.querySelector(".flds-container");
+    const fieldListsCount = Math.ceil(
+      this.FIELDS_LIST.length / defaultConfig.DEFAULT_FORM_LENGTH
+    );
+
+    for (let i = 0; i < pipListsCount; i++) {
+      const newCol = document.createElement("ul");
+      newCol.classList = "pips-list p-0 me-2";
+      pipDiv.append(newCol);
+    }
+
+    for (let i = 0; i < fieldListsCount - 1; i++) {
+      let newCol = document.createElement("div");
+      newCol.classList =
+        "flds d-flex flex-column h-100 ms-5 align-items-center";
+      fieldsDiv.append(newCol);
+    }
+
+    this.FIELDS_LIST.forEach((field) => {
+      this.pipObjArray.push(new Pip(field, defaultConfig.DEFAULT_PIP_LENGTH));
+    });
+  }
+}
+
+let tempFormManager = new ManyFieldsFormManager(generateTestableFields(40));
