@@ -31,6 +31,12 @@ function setCookie(cname, cvalue, exdays) {
   document.cookie = cname + "=" + stringVal + ";" + expires + "; path=/";
 }
 
+function cookieState(fieldId) {
+  let cookie = getCookie("favFieldsList");
+  let fieldInCookie = fieldId ? cookie.includes(fieldId) : false;
+  return [cookie, fieldInCookie || undefined];
+}
+
 function findAvailableList(lists, maxItems) {
   for (let i = 0; i < lists.length; i++) {
     if (
@@ -46,30 +52,29 @@ function findAvailableList(lists, maxItems) {
 class Pip {
   constructor(field) {
     this.field = field;
-    this.favesCookie = getCookie("favFieldsList");
-    this.isInCookie = this.favesCookie.includes(this.field.id) || false;
-    this.fieldEl = new Field(field, this.isInCookie);
+    this.fieldEl = new Field(field, cookieState(this.field.id)[1]);
     this.pipEl = this.pipHtml();
     this.add();
   }
 
   pipHtml() {
     const li = document.createElement("li");
+    const [_, isInCookie] = cookieState(this.field.id);
 
     li.classList = `${this.field.id}-pip ${
-      this.isInCookie ? "active favourite" : ""
+      isInCookie ? "active favourite" : ""
     } ps-1 pe-4 mb-2`;
     li.innerHTML = `
     <i class="fa-solid fa-plus text-success ps-1"></i>
     <span class="ps-4">${this.field.name}</span>
-    <i class="fa-${this.isInCookie ? "solid" : "regular"} fa-star"></i>
+    <i class="fa-${isInCookie ? "solid" : "regular"} fa-star"></i>
     `;
     return li;
   }
 
   add() {
-    let pipLists = document.querySelectorAll(".pips-list");
-    let currentPipList = findAvailableList(
+    const pipLists = document.querySelectorAll(".pips-list");
+    const currentPipList = findAvailableList(
       pipLists,
       defaultConfig.DEFAULT_PIP_LENGTH
     );
@@ -79,6 +84,7 @@ class Pip {
     }
 
     this.pipEl.addEventListener("click", (e) => {
+      const [favesCookie, isInCookie] = cookieState(this.field.id);
       const target = e.target;
       const starIsClicked = target.classList.contains("fa-star");
 
@@ -91,19 +97,16 @@ class Pip {
           target.classList.replace("fa-regular", "fa-solid");
         }
 
-        if (this.favesCookie) {
-          const updatedList = this.isInCookie
-            ? this.favesCookie.filter((item) => item != this.field.id)
-            : `${this.favesCookie},${this.field.id}`;
+        if (favesCookie) {
+          const updatedList = isInCookie
+            ? favesCookie.filter((item) => item != this.field.id)
+            : `${favesCookie},${this.field.id}`;
 
           setCookie("favFieldsList", updatedList, 999);
         } else {
           setCookie("favFieldsList", `${this.field.id}`, 999);
         }
       } else {
-        let isInCookie = getCookie("favFieldsList");
-        isInCookie = isInCookie.includes(this.field.id);
-
         if (this.pipEl.classList.contains("active")) {
           this.pipEl.classList.remove("active", "favourite");
         } else if (isInCookie) {
