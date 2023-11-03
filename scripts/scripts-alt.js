@@ -189,6 +189,7 @@ class Field {
   remove() {
     this.isActive = false;
     this.fieldEl.remove();
+    document.dispatchEvent(new Event("removeFieldEvent"));
   }
 }
 
@@ -225,7 +226,26 @@ class ManyFieldsFormManager {
     this.FIELDS_LIST.forEach((field) => {
       this.pipObjArray.push(new Pip(field, defaultConfig.DEFAULT_PIP_LENGTH));
     });
+
+    document.addEventListener("removeFieldEvent", (e) => {
+      this.redistributeColumns();
+    });
+  }
+
+  redistributeColumns() {
+    let fieldsContainer = document.querySelectorAll(".flds");
+    for (let i = 0; i < fieldsContainer.length - 1; i++) {
+      if (
+        fieldsContainer[i].children.length < defaultConfig.DEFAULT_FORM_LENGTH
+      ) {
+        let nextSiblingCount = fieldsContainer[i + 1].children.length;
+        if (nextSiblingCount > 0) {
+          let childToMove = fieldsContainer[i + 1].firstElementChild;
+          fieldsContainer[i].appendChild(childToMove);
+        }
+      }
+    }
   }
 }
 
-let tempFormManager = new ManyFieldsFormManager(generateTestableFields(40));
+const tempFormManager = new ManyFieldsFormManager(generateTestableFields(40));
