@@ -4,9 +4,10 @@ import generateTestableFields from "./utils/generateTestableFields.js";
 const defaultConfig = {
   DEFAULT_PIP_LENGTH: 20,
   DEFAULT_FORM_LENGTH: 10,
+  DEFAULT_FAV_FIELDS_COOKIE: "favFieldsList",
 };
 
-function getCookie(cname) {
+function getCookie(cname, create) {
   let name = cname + "=";
   let decodedCookie = decodeURIComponent(document.cookie);
   let ca = decodedCookie.split(";");
@@ -19,8 +20,12 @@ function getCookie(cname) {
       return c.substring(name.length, c.length).split(",");
     }
   }
-  console.error(`Cookie not found -- ${cname}`);
-  return "";
+  if (create) {
+    setCookie(cname, "", 999);
+  } else {
+    console.error(`Cookie not found -- ${cname}`);
+    return "";
+  }
 }
 
 function setCookie(cname, cvalue, exdays) {
@@ -31,10 +36,10 @@ function setCookie(cname, cvalue, exdays) {
   document.cookie = cname + "=" + stringVal + ";" + expires + "; path=/";
 }
 
-function cookieState(fieldId) {
-  let cookie = getCookie("favFieldsList");
-  let fieldInCookie = fieldId ? cookie.includes(fieldId) : false;
-  return [cookie, fieldInCookie || undefined];
+function cookieState(fieldId, cookie) {
+  let cvalue = getCookie(cookie, true);
+  let fieldInCookie = fieldId && cvalue ? cvalue.includes(fieldId) : false;
+  return [cvalue, fieldInCookie || undefined];
 }
 
 function findAvailableList(lists, maxItems) {
@@ -52,14 +57,20 @@ function findAvailableList(lists, maxItems) {
 class Pip {
   constructor(field) {
     this.field = field;
-    this.fieldEl = new Field(field, cookieState(this.field.id)[1]);
+    this.fieldEl = new Field(
+      field,
+      cookieState(this.field.id, defaultConfig.DEFAULT_FAV_FIELDS_COOKIE)[1]
+    );
     this.pipEl = this.pipHtml();
     this.add();
   }
 
   pipHtml() {
     const li = document.createElement("li");
-    const [_, isInCookie] = cookieState(this.field.id);
+    const [_, isInCookie] = cookieState(
+      this.field.id,
+      defaultConfig.DEFAULT_FAV_FIELDS_COOKIE
+    );
 
     li.classList = `${this.field.id}-pip ${
       isInCookie ? "active favourite" : ""
@@ -84,7 +95,10 @@ class Pip {
     }
 
     this.pipEl.addEventListener("click", (e) => {
-      const [favesCookie, isInCookie] = cookieState(this.field.id);
+      const [favesCookie, isInCookie] = cookieState(
+        this.field.id,
+        defaultConfig.DEFAULT_FAV_FIELDS_COOKIE
+      );
       const target = e.target;
       const starIsClicked = target.classList.contains("fa-star");
 
