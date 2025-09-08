@@ -31,37 +31,56 @@
                 >
                   <div class="mb-1">
                     <label for="cert_fld" class="fld-label">Certificate</label>
-                    <input
-                      type="text"
-                      name="cert_fld"
-                      id="cert_fld"
-                      class="form-control"
-                    />
+                    <input type="text" name="cert_fld" id="cert_fld" class="form-control" />
                   </div>
                 </div>
               </div>
-              <button type="submit" class="btn btn-primary mt-3" aria-label="Search fields">SEARCH</button>
+              <button type="submit" class="btn btn-primary mt-3" aria-label="Search fields">
+                SEARCH
+              </button>
             </form>
           </div>
         </div>
       </div>
     </div>
     <!-- Slide-out Fields Library Panel -->
-    <aside id="fields-panel" class="fld-options fields-panel" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="fields-panel-title" tabindex="-1">
-      <div class="panel-header d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+    <aside
+      id="fields-panel"
+      class="fld-options fields-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-hidden="true"
+      aria-labelledby="fields-panel-title"
+      tabindex="-1"
+    >
+      <div
+        class="panel-header d-flex align-items-center justify-content-between px-3 py-2 border-bottom"
+      >
         <h2 id="fields-panel-title" class="h6 m-0">Fields Library</h2>
         <div class="d-flex align-items-center">
           <div class="btn-group btn-group-sm me-2" role="group" aria-label="Pip sorting controls">
             <button id="sort-faves" type="button" class="btn btn-outline-secondary">Faves</button>
             <button id="sort-az" type="button" class="btn btn-outline-secondary">A–Z</button>
-            <button id="refresh-pips" type="button" class="btn btn-outline-secondary" title="Refresh">↻</button>
+            <button
+              id="refresh-pips"
+              type="button"
+              class="btn btn-outline-secondary"
+              title="Refresh"
+            >
+              ↻
+            </button>
           </div>
           <div class="btn-group btn-group-sm me-2" role="group" aria-label="Pip pagination">
             <button id="pip-prev" type="button" class="btn btn-outline-secondary">Prev</button>
             <span id="pip-page" class="px-2 small align-self-center">1/1</span>
             <button id="pip-next" type="button" class="btn btn-outline-secondary">Next</button>
           </div>
-          <button id="close-panel" type="button" class="panel-close-btn" aria-label="Close Fields Library">
+          <button
+            id="close-panel"
+            type="button"
+            class="panel-close-btn"
+            aria-label="Close Fields Library"
+          >
             <i class="fa-solid fa-chevron-right"></i>
           </button>
         </div>
@@ -73,7 +92,13 @@
 
     <!-- Right-side Control Rail -->
     <div class="control-rail">
-      <button id="toggle-library" class="bookmark-btn" aria-controls="fields-panel" aria-expanded="false" aria-label="Toggle Fields Library">
+      <button
+        id="toggle-library"
+        class="bookmark-btn"
+        aria-controls="fields-panel"
+        aria-expanded="false"
+        aria-label="Toggle Fields Library"
+      >
         <i class="fa-regular fa-square-plus me-1"></i>
         Fields
       </button>
@@ -88,10 +113,7 @@
     ></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/rangePlugin.js"></script>
-    <script
-      src="https://kit.fontawesome.com/f05b6615ad.js"
-      crossorigin="anonymous"
-    ></script>
-    <script type="module" src="scripts/scripts-alt.js"></script>
+    <script src="https://kit.fontawesome.com/f05b6615ad.js" crossorigin="anonymous"></script>
+    <script type="module" src="scripts/scripts.js"></script>
   </body>
 </html>
