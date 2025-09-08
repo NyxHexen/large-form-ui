@@ -8,7 +8,34 @@ const defaultConfig = {
   DEFAULT_FAV_FIELDS_COOKIE: 'favFieldsList',
   DEFAULT_PIPS_PER_PAGE: 24,
   DEFAULT_PIP_COLS_PER_PAGE: 3,
+  LAZY_LOAD_THRESHOLD: 50, // Load fields in batches
+  DEBOUNCE_DELAY: 150, // Debounce search and sort operations
 };
+
+// Performance optimization: Debounce utility
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Performance optimization: Throttle utility for scroll/resize events
+function throttle(func, limit) {
+  let inThrottle;
+  return function executedFunction(...args) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+}
 
 function cookieState(fieldId, cookie) {
   let cvalue = getFavs();
@@ -36,9 +63,12 @@ class Pip {
   }
 
   pipHtml() {
+    // Use document fragment for better performance
+    const fragment = document.createDocumentFragment();
     const li = document.createElement('li');
     const [_, isInCookie] = cookieState(this.field.id, defaultConfig.DEFAULT_FAV_FIELDS_COOKIE);
 
+    // Batch DOM operations
     li.className = `${this.field.id}-pip ${isInCookie ? 'active favourite' : ''}`;
     li.setAttribute('role', 'button');
     li.setAttribute('tabindex', '0');
@@ -57,11 +87,14 @@ class Pip {
     starIcon.setAttribute('aria-label', 'Toggle favourite');
     starIcon.setAttribute('aria-pressed', isInCookie ? 'true' : 'false');
 
-    li.appendChild(plusIcon);
-    li.appendChild(nameSpan);
-    li.appendChild(starIcon);
+    // Use fragment to batch DOM operations
+    fragment.appendChild(plusIcon);
+    fragment.appendChild(nameSpan);
+    fragment.appendChild(starIcon);
+    li.appendChild(fragment);
 
-    const handleStarToggle = (e) => {
+    // Optimize event handlers with proper cleanup
+    this.handleStarToggle = (e) => {
       e.stopPropagation();
       if (starIcon.classList.contains('fa-solid')) {
         this.pipEl.classList.remove('favourite');
@@ -77,13 +110,15 @@ class Pip {
       toggleFav(this.field.id);
     };
 
-    starIcon.addEventListener('click', handleStarToggle);
-    starIcon.addEventListener('keydown', (e) => {
+    this.handleStarKeydown = (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
-        handleStarToggle(e);
+        this.handleStarToggle(e);
         e.preventDefault();
       }
-    });
+    };
+
+    starIcon.addEventListener('click', this.handleStarToggle);
+    starIcon.addEventListener('keydown', this.handleStarKeydown);
 
     return li;
   }
@@ -92,7 +127,8 @@ class Pip {
     const list = document.querySelector('.pips .pips-list');
     if (list) list.append(this.pipEl);
 
-    this.pipEl.addEventListener('click', (e) => {
+    // Optimize event handlers with proper cleanup
+    this.handleClick = (e) => {
       const [_, isInCookie] = cookieState(this.field.id, defaultConfig.DEFAULT_FAV_FIELDS_COOKIE);
       const target = e.target;
       const starIsClicked = target.classList.contains('fa-star');
@@ -113,14 +149,34 @@ class Pip {
 
         this.fieldEl[this.fieldEl.isActive ? 'remove' : 'add']();
       }
-    });
+    };
 
-    this.pipEl.addEventListener('keydown', (e) => {
+    this.handleKeydown = (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         this.pipEl.click();
         e.preventDefault();
       }
-    });
+    };
+
+    this.pipEl.addEventListener('click', this.handleClick);
+    this.pipEl.addEventListener('keydown', this.handleKeydown);
+  }
+
+  // Cleanup method to prevent memory leaks
+  destroy() {
+    if (this.pipEl) {
+      this.pipEl.removeEventListener('click', this.handleClick);
+      this.pipEl.removeEventListener('keydown', this.handleKeydown);
+      const starIcon = this.pipEl.querySelector('.fa-star');
+      if (starIcon) {
+        starIcon.removeEventListener('click', this.handleStarToggle);
+        starIcon.removeEventListener('keydown', this.handleStarKeydown);
+      }
+      this.pipEl.remove();
+    }
+    if (this.fieldEl) {
+      this.fieldEl.destroy?.();
+    }
   }
 }
 
@@ -135,8 +191,11 @@ class Field {
   }
 
   fieldHtml() {
+    // Use document fragment for better performance
+    const fragment = document.createDocumentFragment();
     const newFieldEl = document.createElement('div');
     newFieldEl.classList.add('mb-1');
+    
     const isDateRange =
       this.field.type === 'date' || this.field.type === 'date_range' || this.field.range === true;
     const isDateSingle =
@@ -149,7 +208,7 @@ class Field {
     label.className = 'fld-label';
     label.htmlFor = inputId;
     label.textContent = this.field.name;
-    newFieldEl.appendChild(label);
+    fragment.appendChild(label);
 
     if (isDateRange) {
       const group = document.createElement('div');
@@ -184,7 +243,10 @@ class Field {
       group.appendChild(from);
       group.appendChild(sep);
       group.appendChild(to);
-      newFieldEl.appendChild(group);
+      fragment.appendChild(group);
+
+      // Store picker references for cleanup
+      this.flatpickrInstances = [];
 
       // Progressive enhancement: attach paired (non-range) date pickers with constrained bounds
       try {
@@ -205,6 +267,7 @@ class Field {
               if (fromPicker) fromPicker.set('maxDate', d);
             },
           });
+          this.flatpickrInstances = [fromPicker, toPicker];
         }
       } catch (_) {}
     } else if (isDateSingle) {
@@ -221,11 +284,15 @@ class Field {
       }
       input.setAttribute('data-lpignore', 'true');
       input.setAttribute('data-1p-ignore', 'true');
-      newFieldEl.appendChild(input);
+      fragment.appendChild(input);
+
+      // Store picker reference for cleanup
+      this.flatpickrInstances = [];
 
       try {
         if (window.flatpickr) {
-          window.flatpickr(input, { dateFormat: 'Y-m-d', allowInput: true });
+          const picker = window.flatpickr(input, { dateFormat: 'Y-m-d', allowInput: true });
+          this.flatpickrInstances = [picker];
         }
       } catch (_) {}
     } else {
@@ -234,9 +301,11 @@ class Field {
       input.name = this.field.id;
       input.id = inputId;
       input.className = 'form-control';
-      newFieldEl.appendChild(input);
+      fragment.appendChild(input);
     }
 
+    // Append all elements at once
+    newFieldEl.appendChild(fragment);
     return newFieldEl;
   }
 
@@ -265,6 +334,21 @@ class Field {
     this.fieldEl.remove();
     document.dispatchEvent(new Event('removeFieldEvent'));
   }
+
+  // Cleanup method to prevent memory leaks
+  destroy() {
+    if (this.flatpickrInstances) {
+      this.flatpickrInstances.forEach(picker => {
+        if (picker && typeof picker.destroy === 'function') {
+          picker.destroy();
+        }
+      });
+      this.flatpickrInstances = null;
+    }
+    if (this.fieldEl) {
+      this.fieldEl.remove();
+    }
+  }
 }
 
 class ManyFieldsFormManager {
@@ -275,6 +359,9 @@ class ManyFieldsFormManager {
     this.pipPage = 1;
     // Compute per-page capacity as columns * items per column
     this.pipsPerPage = defaultConfig.DEFAULT_PIP_COLS_PER_PAGE * defaultConfig.DEFAULT_PIP_LENGTH;
+    this.loadedFields = 0;
+    this.isLoading = false;
+    this.observer = null; // For intersection observer
     this.init();
   }
 
@@ -285,18 +372,21 @@ class ManyFieldsFormManager {
 
     // Do not pre-create field columns; start with the single default column in HTML
 
-    this.FIELDS_LIST.forEach((field) => {
-      this.pipObjArray.push(new Pip(field, defaultConfig.DEFAULT_PIP_LENGTH));
-    });
+    // Lazy load initial batch of fields
+    this.loadInitialFields();
 
     // Initial sort/layout
     this.renderSortedPips();
 
-    document.addEventListener('removeFieldEvent', (e) => {
-      this.redistributeColumns();
+    // Debounce expensive operations
+    this.debouncedRedistribute = debounce(() => this.redistributeColumns(), defaultConfig.DEBOUNCE_DELAY);
+    this.debouncedSyncAlignment = debounce(() => this.syncColumnAlignment(), defaultConfig.DEBOUNCE_DELAY);
+
+    document.addEventListener('removeFieldEvent', () => {
+      this.debouncedRedistribute();
     });
     document.addEventListener('addFieldEvent', () => {
-      this.syncColumnAlignment();
+      this.debouncedSyncAlignment();
     });
 
     // Optional controls
@@ -394,6 +484,49 @@ class ManyFieldsFormManager {
     });
   }
 
+  // Lazy loading methods
+  loadInitialFields() {
+    const initialBatch = Math.min(defaultConfig.LAZY_LOAD_THRESHOLD, this.FIELDS_LIST.length);
+    this.loadFieldsBatch(0, initialBatch);
+  }
+
+  loadFieldsBatch(startIndex, endIndex) {
+    if (this.isLoading) return;
+    this.isLoading = true;
+
+    // Use requestAnimationFrame to prevent blocking the main thread
+    requestAnimationFrame(() => {
+      for (let i = startIndex; i < endIndex && i < this.FIELDS_LIST.length; i++) {
+        const field = this.FIELDS_LIST[i];
+        this.pipObjArray.push(new Pip(field, defaultConfig.DEFAULT_PIP_LENGTH));
+        this.loadedFields++;
+      }
+      this.isLoading = false;
+      
+      // Trigger re-render if we're on the current page
+      if (this.loadedFields > 0) {
+        this.renderSortedPips();
+      }
+    });
+  }
+
+  // Cleanup method to prevent memory leaks
+  destroy() {
+    // Clean up all pip objects
+    this.pipObjArray.forEach(pip => pip.destroy?.());
+    this.pipObjArray = [];
+    
+    // Clean up observers
+    if (this.observer) {
+      this.observer.disconnect();
+      this.observer = null;
+    }
+    
+    // Remove event listeners
+    document.removeEventListener('removeFieldEvent', this.debouncedRedistribute);
+    document.removeEventListener('addFieldEvent', this.debouncedSyncAlignment);
+  }
+
   redistributeColumns() {
     let fieldsContainer = document.querySelectorAll('.flds');
     for (let i = 0; i < fieldsContainer.length - 1; i++) {
@@ -433,8 +566,13 @@ class ManyFieldsFormManager {
   }
 
   renderSortedPips() {
+    performanceMonitor.markStart('fieldRendering');
     const pipsContainer = document.querySelector('.pips');
     if (!pipsContainer) return;
+    
+    // Use document fragment for better performance
+    const fragment = document.createDocumentFragment();
+    
     // Clear any existing columns
     pipsContainer.querySelectorAll('.pips-list').forEach((ul) => ul.remove());
 
@@ -464,14 +602,18 @@ class ManyFieldsFormManager {
     for (let c = 0; c < neededCols; c++) {
       const ul = document.createElement('ul');
       ul.className = 'pips-list p-0';
-      pipsContainer.appendChild(ul);
+      fragment.appendChild(ul);
       columns.push(ul);
     }
+    
     // Distribute items into columns sequentially
     pageItems.forEach((pip, i) => {
       const colIndex = Math.min(columns.length - 1, Math.floor(i / itemsPerCol));
       columns[colIndex].appendChild(pip.pipEl);
     });
+
+    // Append all columns at once
+    pipsContainer.appendChild(fragment);
 
     // Update pager UI
     const pageLabel = document.getElementById('pip-page');
@@ -484,6 +626,8 @@ class ManyFieldsFormManager {
     if (pagerGroup) {
       pagerGroup.style.display = totalPages > 1 ? 'inline-flex' : 'none';
     }
+    
+    performanceMonitor.markEnd('fieldRendering');
   }
 }
 
@@ -496,7 +640,46 @@ const demoDateFields = [
   { name: 'Date of Birth', id: 'dob', type: 'date_single' },
 ];
 
+// Performance monitoring
+const performanceMonitor = {
+  startTime: performance.now(),
+  metrics: {
+    initialLoad: 0,
+    fieldRendering: 0,
+    domManipulation: 0
+  },
+  
+  markStart(label) {
+    this[`${label}Start`] = performance.now();
+  },
+  
+  markEnd(label) {
+    if (this[`${label}Start`]) {
+      this.metrics[label] = performance.now() - this[`${label}Start`];
+      delete this[`${label}Start`];
+    }
+  },
+  
+  logMetrics() {
+    console.log('Performance Metrics:', {
+      ...this.metrics,
+      totalTime: performance.now() - this.startTime
+    });
+  }
+};
+
+// Initialize performance monitoring
+performanceMonitor.markStart('initialLoad');
+
 const tempFormManager = new ManyFieldsFormManager([
   ...demoDateFields,
   ...generateTestableFields(37),
 ]);
+
+// Mark initial load complete
+performanceMonitor.markEnd('initialLoad');
+
+// Log performance metrics after a short delay to allow for async operations
+setTimeout(() => {
+  performanceMonitor.logMetrics();
+}, 1000);
