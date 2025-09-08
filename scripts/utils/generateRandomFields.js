@@ -1,6 +1,6 @@
 function generateRandomFields(n) {
   const fields = [];
-  const fieldTypes = ["date", "text"];
+  const fieldTypes = ["date", "date_single", "text"];
   const minNameIdLength = 16;
   const maxNameIdLength = 16;
 

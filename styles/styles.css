@@ -1,8 +1,24 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap");
-
 :root {
   --shadow-color: 0deg 0% 15%;
   --lighter-shadow-color: 0deg 0% 60%;
+  --accent: #0a84ff;
+  --accent-30: rgba(10, 132, 255, 0.3);
+  --accent-hover: #0877e6;
+  --active-bg: #f2f7ff;
+  --active-border: var(--accent-30);
+  --fav-bg: #fff6d6;
+  --fav-star: #ffc000;
+  --hover-bg: #f5f7fb;
+  --chip-bg: #ffffff;
+  --chip-border: hsl(var(--lighter-shadow-color) / 65%);
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --radius-pill: 999px;
+  --elev-1: 0 1px 2px hsl(var(--shadow-color) / 10%);
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
 }
 
 *,
@@ -52,111 +68,338 @@ h6 {
 }
 
 body {
-  background-color: #797979;
+  background-color: #fafafa;
 }
 
 body * {
-  font-family: "Montserrat", sans-serif;
-}
-
-.form-container {
-  background: #fff;
-  border-top: 1px solid #4e4e4e;
-  border-bottom: 1px solid #4e4e4e;
+  font-family: var(--font-sans);
 }
 
 #search-form {
   height: 80vh;
 }
 
-.pips-list,
+/* Slide-out panel for fields library */
+.fields-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 360px;
+  max-width: 90vw;
+  background: #fff;
+  box-shadow: -12px 0 24px hsl(var(--shadow-color) / 10%);
+  transform: translateX(100%);
+  transition: transform 180ms ease;
+  z-index: 1040;
+  display: flex;
+  flex-direction: column;
+}
+
+.fields-panel.open {
+  transform: translateX(0);
+}
+
+.fields-panel .panel-body {
+  overflow: auto;
+  flex: 1 1 auto;
+}
+
+/* Right-side control rail */
+.control-rail {
+  position: fixed;
+  right: 0;
+  top: 40%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  z-index: 1030;
+  transition: opacity 180ms ease;
+}
+
+.bookmark-btn {
+  writing-mode: horizontal-tb;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px 0 0 8px;
+  padding: 0.5rem 0.75rem;
+  box-shadow: var(--elev-1);
+  cursor: pointer;
+  transform: translateX(0);
+  transition: background-color 180ms ease, padding-right 180ms ease;
+}
+
+.bookmark-btn:hover,
+.bookmark-btn:focus-visible {
+  outline: none;
+  background-color: var(--accent-hover);
+  padding-right: 1.5rem;
+}
+
+/* Hide/disable the rail when panel is open */
+.fields-panel.open + .control-rail {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%) translateX(8px);
+}
+
+.panel-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 28px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 6px;
+}
+
+.panel-close-btn:hover,
+.panel-close-btn:focus-visible {
+  filter: brightness(0.95);
+  outline: none;
+}
+
+/* Backdrop to catch outside clicks */
+.panel-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 180ms ease;
+  z-index: 1025;
+}
+
+.fields-panel.open ~ .panel-backdrop {
+  opacity: 1;
+  visibility: visible;
+}
+
+.pips {
+  display: flex;
+  overflow-x: hidden;
+  padding-bottom: var(--space-2);
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: var(--space-2);
+}
+
 .pips-list {
   list-style: none;
   font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+}
+
+/* Keep control rail usable on very short viewports */
+@media (max-height: 600px) {
+  .control-rail {
+    top: auto;
+    bottom: 16px;
+    transform: none;
+  }
 }
 
 .pips-list > * {
+  -webkit-user-select: none;
   user-select: none;
-  position: relative;
-  background: #fff;
-  border-radius: 20px;
-  border: 1px solid hsl(var(--lighter-shadow-color));
-  box-shadow: 2px 2px hsl(var(--lighter-shadow-color)), 
-  1px 1px hsl(var(--lighter-shadow-color)),
-  0 0 hsl(var(--lighter-shadow-color));
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: var(--chip-bg);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--chip-border);
   cursor: pointer;
   text-decoration: none;
   color: black;
   width: max-content;
+  min-height: 2rem;
+  padding: 0 var(--space-2);
+  box-shadow: var(--elev-1);
+  transition: background-color 120ms ease, border-color 120ms ease, transform 80ms ease;
+}
+
+.pips-list > * i {
+  font-size: 0.9rem;
+  line-height: 1;
 }
 
 .pips-list > *:hover {
-  background-color: #bfd9ffb4;
+  background-color: var(--hover-bg);
 }
 
 .pips-list > *:hover .fa-star {
   opacity: 1;
 }
 
-[class*="-pip"] i.fa-plus {
-  position: absolute;
-  top: 18%;
-  bottom: 0;
+[class*='-pip'] i.fa-plus {
+  color: var(--accent);
+  opacity: 0.9;
 }
 
-[class*="-pip"] i.fa-star {
-  position: absolute;
-  top: 20%;
-  right: 2.5%;
-  opacity: .25;
+[class*='-pip'] i.fa-star {
+  margin-left: auto;
+  opacity: 0.35;
 }
 
-[class*="-pip"] i.fa-star.fa-solid {
-  color: #FFC000;
+[class*='-pip'] i.fa-star.fa-solid {
+  color: var(--fav-star);
   opacity: 1 !important;
 }
 
-[class*="-pip"].active {
-  background-color: #a7dbff;
-  box-shadow: 1px 1px #86afcc,
-  0 0 #86afcc;
-  transform: translateX(1px) translateY(1px);
-  border: 1px solid #86afcc;
+[class*='-pip'].active {
+  background-color: var(--active-bg);
+  border: 1px solid var(--active-border);
 }
 
-[class*="-pip"].favourite.active {
-  box-shadow: 1px 1px #cccccc,
-  0 0 #cccccc !important;
-  border: 1px solid #ffbf0046;
-  background: #ffbf0046 !important;
+[class*='-pip'].favourite.active {
+  border: 1px solid var(--fav-bg);
+  background: var(--fav-bg) !important;
+}
+
+/* Keyboard accessibility */
+.pips-list > *:focus-visible,
+.pips-list > * i.fa-star:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.form-control {
+  font-size: 0.9rem;
+}
+
+.form-control:focus {
+  box-shadow: 0 0 0 0.15rem var(--accent-30);
+}
+
+/* Center text for all native date inputs (single and range) */
+.form-control[type="date"],
+input[type="date"] {
+  text-align: center;
+}
+/* WebKit-specific centering for date edit fields */
+input[type="date"]::-webkit-datetime-edit,
+input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
+  text-align: center;
+}
+/* Ensure Flatpickr-managed inputs center as well (it may set type="text") */
+.flatpickr-input {
+  text-align: center;
 }
 
 .fld-label {
   position: relative;
   font-size: 0.75rem;
   letter-spacing: 0.05em;
-  text-shadow: 0px 0px 1px hsl(var(--shadow-color) / 40%),
-    0px 0px 2px hsl(var(--shadow-color) / 40%);
-  color: hsl(var(--shadow-color) / 70%);
+  color: hsl(var(--shadow-color) / 90%);
+  display: block;
+  margin-bottom: 0.25rem;
 }
 
-[id*="_fld"] {
-  padding: 0.15rem 0.50rem;
-  box-shadow: 0px 0.2px 0.3px hsl(var(--shadow-color) / 0),
-    0px 0.6px 0.9px hsl(var(--shadow-color) / 0.1),
-    0px 1px 1.5px hsl(var(--shadow-color) / 0.21),
-    0px 1.7px 2.6px hsl(var(--shadow-color) / 0.31),
-    0.1px 2.9px 4.4px hsl(var(--shadow-color) / 0.41);
+[id*='_fld'] {
+  padding: 0.3rem 0.5rem;
   border: 1px solid hsl(var(--shadow-color) / 13%);
 }
 
-[id*="from_fld"],
-[id*="to_fld"] {
-  width: 7.25rem;
-  font-size: 0.8rem;
-  font-weight: 500;
+[id*='from_fld'],
+[id*='to_fld'] {
+  padding-top: 0.5rem;
+  padding-bottom: 0.45rem;
 }
 
-.date-to {
-  margin: 0 0.5rem;
+/* Compact, styled input-group for date ranges */
+.input-group.date-range {
+  display: inline-flex;
+  align-items: stretch;
+  width: auto;
+  max-width: 100%;
+  border: 1px solid hsl(var(--shadow-color) / 13%);
+  border-radius: 0.375rem;
+  background: #fff;
+  overflow: hidden;
+}
+
+.input-group.date-range:focus-within {
+  box-shadow: 0 0 0 0.15rem var(--accent-30);
+}
+
+.input-group.date-range .form-control {
+  border: none !important;
+  box-shadow: none;
+  width: 5.75rem; /* slightly wider as requested */
+  flex: 0 0 auto;
+  min-width: 0;
+  padding: 0.3rem 0.5rem 0.275rem; /* match normal form-control vertical padding */
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.input-group.date-range .form-control:focus {
+  box-shadow: none;
+}
+
+.input-group.date-range .input-group-text.date-to {
+  background-color: transparent; /* remove fill to match minimalist style */
+  border: none;
+  border-left: 1px solid hsl(var(--shadow-color) / 13%);
+  border-right: 1px solid hsl(var(--shadow-color) / 13%);
+  color: hsl(var(--shadow-color) / 65%);
+  font-size: 0.85rem;
+  padding: 0 0.15rem 0.1rem; /* tighter as requested */
+  display: flex;
+  align-items: center;
+}
+
+/* Stack gracefully on small screens */
+@media (max-width: 576px) {
+  .input-group.date-range {
+    flex-wrap: wrap;
+  }
+  .input-group.date-range .form-control {
+    width: 100%;
+    flex: 1 0 100%;
+  }
+  .input-group.date-range .input-group-text.date-to {
+    width: 100%;
+    justify-content: center;
+    padding: 0.25rem 0;
+  }
+}
+
+/* Date range container spacing */
+.flds .d-flex.align-items-center {
+  gap: var(--space-2);
+}
+
+/* Prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .pips-list > * {
+    transition: none;
+  }
+}
+
+/* Responsive date range layout */
+@media (max-width: 576px) {
+  .d-flex.align-items-center {
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
+  }
+  [id*='from_fld'],
+  [id*='to_fld'] {
+    width: 100%;
+  }
 }

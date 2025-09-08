@@ -191,17 +191,7 @@ function pipMng(args) {
     (pipSwitch ? "active" : "avail") + "_" + field.id
   } field-${action} ps-1 mb-2`;
 
-  // To-Do - Add position to each field so it can be organized additionally,
-  // and will help with positioning/sorting.
-  // To-Do - Reset button.
-  // To-Do  Create buttons to organize the pips, "A-Z" or "Z-A".
-
   function setField() {
-    // To-Do - Find a way to do this without having to reset currentList
-    // each time
-    // To-Do - Find a way to have pips that are being added back by removing a field
-    // to be added all the way back. If the first ul is empty - get rid of it and add
-    // a new one at the back.
     fieldMng({
       field,
       action: fieldEl ? "remove" : "add",
